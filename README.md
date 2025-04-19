@@ -1,5 +1,11 @@
 # Advanced Hand Gesture Drawing
 
+![GitHub stars](https://img.shields.io/github/stars/yourusername/hand-gesture-drawing?style=social)
+![GitHub forks](https://img.shields.io/github/forks/yourusername/hand-gesture-drawing?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/yourusername/hand-gesture-drawing?style=social)
+![GitHub repo size](https://img.shields.io/github/repo-size/yourusername/hand-gesture-drawing)
+![GitHub last commit](https://img.shields.io/github/last-commit/yourusername/hand-gesture-drawing)
+
 A sophisticated Python application that allows you to draw on your screen using natural hand gestures captured through your webcam. This project combines computer vision with an intuitive drawing interface for a hands-free creative experience.
 
 ![Advanced Hand Gesture Drawing Demo](demo.gif)
@@ -8,25 +14,18 @@ A sophisticated Python application that allows you to draw on your screen using 
 
 ### Core Functionality
 
-- **Thumb-Activated Drawing**: Draw with your index finger **only when your thumb is up**
-- **Guidance Mode**: When thumb is down, a guidance point shows where your finger is without drawing
-- **Color Selection**: Select different colors by placing your pinky finger on the color palette
+- **Thumb-Extension Drawing**: Draw with your index finger when your thumb is extended
+- **Guidance Mode**: When thumb is not extended, a guidance point shows where your finger is without drawing
+- **Easy Color Selection**: Choose colors from buttons on the right panel or by using your pinky finger on the on-screen color palette
 - **Multiple Drawing Tools**: Choose between freehand drawing, lines, rectangles, and circles
 - **Adjustable Brush Size**: Change the thickness of your drawing strokes
-- **Statistics Tracking**: Monitor usage statistics including session time, view count, and more
 
-### Usage Statistics
+### Drawing Tools
 
-- **Session Time**: Tracks how long the current drawing session has been active
-- **Start Count**: Counts how many times the application has been launched
-- **View Count**: Tracks total number of application views
-- **Lines Drawn**: Counts the number of drawing strokes created
-- **Color Changes**: Tracks how often you change drawing colors
-
-### File Management
-
-- **Save Drawings**: Save your creations as PNG images with timestamps
-- **Statistics Persistence**: Your usage statistics are saved between sessions
+- **Freehand Drawing**: Draw naturally as if using a pen
+- **Line Tool**: Create perfectly straight lines
+- **Rectangle Tool**: Draw rectangles with precise corners
+- **Circle Tool**: Create perfect circles with customizable size
 
 ## Installation
 
@@ -59,9 +58,9 @@ sudo apt install python3.10 python3.10-venv
 ### Step 2: Create a Project Environment
 
 ```bash
-# Create a project directory
-mkdir advanced_hand_drawing
-cd advanced_hand_drawing
+# Clone the repository
+git clone https://github.com/yourusername/hand-gesture-drawing.git
+cd hand-gesture-drawing
 
 # Create a virtual environment
 python3.10 -m venv venv
@@ -79,31 +78,26 @@ source venv/bin/activate
 pip install opencv-python mediapipe numpy pillow
 ```
 
-### Step 4: Download the Application Code
-
-1. Save the application code as `advanced_hand_drawing.py` in your project directory
-2. Ensure you have proper permissions for webcam access
-
-## How to Use
-
-### Starting the Application
+### Step 4: Run the Application
 
 ```bash
 python advanced_hand_drawing.py
 ```
 
+## How to Use
+
 ### Hand Gestures
 
 The application interprets specific hand gestures to control drawing:
 
-1. **Thumb Up + Index Finger**: Activates drawing mode
-   - Move your index finger with thumb up to draw on the canvas
-2. **Thumb Down + Index Finger**: Guidance mode
+1. **Extended Thumb + Index Finger**: Activates drawing mode
+   - Move your index finger with thumb extended to draw on the canvas
+2. **Thumb In Fist + Index Finger**: Guidance mode
    - A gray dot shows where you would draw without actually drawing
    - Use this to position your cursor before drawing
 3. **Pinky Finger on Color Palette**: Select a drawing color
-   - Place your pinky on the color palette in the top-left corner of the video feed
-   - Colors are arranged in a 3×3 grid: red, green, blue, yellow, black, purple, orange, brown, cyan
+   - Place your pinky on the color palette in the right side of the video feed
+   - Alternatively, use the color buttons on the right panel of the application
 
 ### Drawing Tools
 
@@ -120,16 +114,6 @@ Select different drawing tools from the dropdown menu:
 - **Save Drawing**: Saves your current drawing as a PNG file
 - **Brush Size**: Adjusts the thickness of drawing strokes
 - **Mode Selection**: Choose between different drawing tools
-
-### Statistics Display
-
-The bottom panel shows your usage statistics:
-
-- Current session time
-- Application launch count
-- Total view count
-- Currently selected color
-- Number of lines drawn in the current session
 
 ## Technical Details
 
@@ -150,16 +134,9 @@ The application uses MediaPipe's hand landmark detection to track 21 points on y
 
 Key landmarks used:
 
-- **Thumb tip** (landmark #4): Controls drawing mode activation
+- **Thumb** (landmarks #1-4): Controls drawing mode activation
 - **Index finger tip** (landmark #8): Main drawing pointer
 - **Pinky finger tip** (landmark #20): Used for color selection
-
-### Performance Considerations
-
-- The application performs best with good lighting conditions
-- A minimum of 720p webcam resolution is recommended
-- For optimal performance, close other resource-intensive applications
-- CPU usage may be high due to real-time video processing
 
 ## Troubleshooting
 
@@ -181,7 +158,7 @@ Key landmarks used:
 3. **Colors not selecting properly**:
    - Make sure your pinky finger is clearly visible
    - Hold your pinky still for a moment over the color cell
-   - Check that the color palette is visible in the video feed
+   - Try using the UI color buttons instead
 
 ## Future Enhancements
 
@@ -190,20 +167,7 @@ Key landmarks used:
 1. **Multi-hand Support**: Draw with both hands simultaneously
 2. **Gesture Shortcuts**: Additional gestures for undo/redo operations
 3. **Layer Support**: Create and manipulate drawing layers
-4. **Image Import**: Draw on top of existing images
-5. **Cloud Storage**: Save drawings to cloud services
-6. **Voice Commands**: Control the application with voice in addition to gestures
-7. **Collaborative Mode**: Draw together with others over a network
-8. **3D Drawing**: Extend drawing capabilities to three dimensions
-9. **AI-assisted Drawing**: Smart drawing features using machine learning
-10. **Export to SVG**: Save drawings in vector format
-
-### Research Directions
-
-- Improved hand tracking in challenging lighting conditions
-- More advanced gesture recognition for complex controls
-- Reducing system resource requirements for better performance
-- Integration with VR/AR environments
+4. **Voice Commands**: Control the application with voice in addition to gestures
 
 ## Contributing
 
@@ -214,6 +178,10 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+## Star History
+
+[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/hand-gesture-drawing&type=Date)](https://star-history.com/#yourusername/hand-gesture-drawing&Date)
 
 ## License
 
@@ -227,4 +195,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-_Note: Replace the demo.gif and hand_landmarks.png placeholder references with actual images once you have created them._
+_Note: Replace "yourusername" in the URLs and badge links with your actual GitHub username when you create the repository. Also, replace the demo.gif and hand_landmarks.png placeholder references with actual images once you have created them._

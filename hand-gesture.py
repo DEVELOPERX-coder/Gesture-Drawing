@@ -14,18 +14,9 @@ class AdvancedHandGestureDrawingApp:
         self.root = root
         self.root.title("Advanced Hand Gesture Drawing")
         
-        # Application stats
-        self.stats = {
-            'session_start': datetime.now(),
-            'start_count': 0,
-            'view_count': 1,  # Current session counts as 1
-            'total_drawing_time': 0,
-            'color_changes': 0,
-            'lines_drawn': 0
-        }
-        
-        # Load previous stats if available
-        self.load_stats()
+        # Simplified app initialization
+        self.session_start = datetime.now()
+        self.lines_drawn = 0
         
         # Set up frames
         self.main_frame = tk.Frame(root)
@@ -34,12 +25,12 @@ class AdvancedHandGestureDrawingApp:
         self.video_frame = tk.Frame(self.main_frame)
         self.video_frame.pack(side=tk.LEFT, padx=10, pady=10)
         
+        # Color palette frame on the right side
+        self.color_frame = tk.Frame(self.main_frame)
+        self.color_frame.pack(side=tk.RIGHT, fill="y", padx=10, pady=10)
+        
         self.canvas_frame = tk.Frame(self.main_frame)
         self.canvas_frame.pack(side=tk.RIGHT, fill="both", expand=True, padx=10, pady=10)
-        
-        # Stats display frame
-        self.stats_frame = tk.Frame(root)
-        self.stats_frame.pack(side=tk.BOTTOM, fill="x")
         
         # Video display
         self.video_label = tk.Label(self.video_frame, text="Initializing camera...")
@@ -81,27 +72,10 @@ class AdvancedHandGestureDrawingApp:
                                          length=100)
         self.brush_size_slider.pack(side=tk.LEFT, padx=5)
         
-        # Stats display
-        self.stats_display = ttk.LabelFrame(self.stats_frame, text="Session Statistics")
-        self.stats_display.pack(fill="x", padx=10, pady=5)
-        
-        self.stats_text = {
-            'session_time': tk.StringVar(value="Session Time: 00:00"),
-            'start_count': tk.StringVar(value=f"Start Count: {self.stats['start_count']}"),
-            'view_count': tk.StringVar(value=f"View Count: {self.stats['view_count']}"),
-            'current_color': tk.StringVar(value="Current Color: black"),
-            'lines_drawn': tk.StringVar(value="Lines Drawn: 0")
-        }
-        
-        # Create stats labels
-        stats_inner_frame = tk.Frame(self.stats_display)
-        stats_inner_frame.pack(fill="x", padx=5, pady=5)
-        
-        ttk.Label(stats_inner_frame, textvariable=self.stats_text['session_time']).pack(side=tk.LEFT, padx=10)
-        ttk.Label(stats_inner_frame, textvariable=self.stats_text['start_count']).pack(side=tk.LEFT, padx=10)
-        ttk.Label(stats_inner_frame, textvariable=self.stats_text['view_count']).pack(side=tk.LEFT, padx=10)
-        ttk.Label(stats_inner_frame, textvariable=self.stats_text['current_color']).pack(side=tk.LEFT, padx=10)
-        ttk.Label(stats_inner_frame, textvariable=self.stats_text['lines_drawn']).pack(side=tk.LEFT, padx=10)
+        # Simple status display
+        self.status_var = tk.StringVar(value="Current Color: black")
+        self.status_label = ttk.Label(self.controls, textvariable=self.status_var)
+        self.status_label.pack(side=tk.RIGHT, padx=10)
         
         # Drawing state variables
         self.drawing = False
@@ -144,60 +118,56 @@ class AdvancedHandGestureDrawingApp:
         self.update_session_timer()
     
     def create_color_palette(self):
-        """Create a color palette image that will be displayed on screen"""
-        palette = np.ones((180, 180, 3), dtype=np.uint8) * 255
-        
-        # Grid of colors (3x3)
-        cell_h, cell_w = 60, 60
+        """Create UI color buttons in the side panel"""
         colors = [
-            [(255, 165, 0), (165, 42, 42), (0, 255, 255)],  # orange, brown, cyan
-            [(255, 255, 0), (0, 0, 0), (128, 0, 128)],      # yellow, black, purple
-            [(255, 0, 0), (0, 255, 0), (0, 0, 255)]         # red, green, blue
+            ("red", "#FF0000"),
+            ("green", "#00FF00"),
+            ("blue", "#0000FF"),
+            ("yellow", "#FFFF00"),
+            ("black", "#000000"),
+            ("purple", "#800080"),
+            ("orange", "#FFA500"),
+            ("brown", "#A52A2A"),
+            ("cyan", "#00FFFF")
         ]
         
-        for i in range(3):
-            for j in range(3):
-                y1, y2 = i * cell_h, (i + 1) * cell_h
-                x1, x2 = j * cell_w, (j + 1) * cell_w
-                palette[y1:y2, x1:x2] = colors[i][j][::-1]  # Reverse BGR for OpenCV
+        # Create color buttons
+        self.color_buttons = []
+        for name, hex_color in colors:
+            btn = tk.Button(self.color_frame, 
+                           background=hex_color, 
+                           width=3, height=1,
+                           command=lambda c=name: self.set_color(c))
+            btn.pack(pady=5, padx=10, fill="x")
+            self.color_buttons.append((name, btn))
+            
+            # Add tooltip-like label
+            lbl = tk.Label(self.color_frame, text=name)
+            lbl.pack(pady=0, padx=10)
+        
+        # Also create a virtual color palette for the video feed
+        palette = np.ones((480, 50, 3), dtype=np.uint8) * 255
+        
+        # Vertical strips of colors
+        cell_h = 480 // len(colors)
+        for i, (name, hex_color) in enumerate(colors):
+            # Convert hex to BGR (OpenCV uses BGR)
+            r = int(hex_color[1:3], 16)
+            g = int(hex_color[3:5], 16)
+            b = int(hex_color[5:7], 16)
+            
+            y1, y2 = i * cell_h, (i + 1) * cell_h
+            palette[y1:y2, :] = (b, g, r)  # BGR format for OpenCV
         
         return palette
-    
-    def load_stats(self):
-        """Load previous statistics if available"""
-        if os.path.exists("drawing_stats.json"):
-            try:
-                with open("drawing_stats.json", "r") as f:
-                    saved_stats = json.load(f)
-                    if 'start_count' in saved_stats:
-                        self.stats['start_count'] = saved_stats['start_count'] + 1
-                    if 'view_count' in saved_stats:
-                        self.stats['view_count'] = saved_stats['view_count'] + 1
-                    if 'total_drawing_time' in saved_stats:
-                        self.stats['total_drawing_time'] = saved_stats['total_drawing_time']
-            except:
-                # If error in reading stats, continue with defaults
-                pass
-    
-    def save_stats(self):
-        """Save current statistics to file"""
-        # Calculate session time
-        session_time = (datetime.now() - self.stats['session_start']).total_seconds()
-        self.stats['total_drawing_time'] += session_time
         
-        try:
-            with open("drawing_stats.json", "w") as f:
-                json.dump(self.stats, f)
-        except:
-            # If error in saving stats, just continue
-            pass
+    def set_color(self, color_name):
+        """Set the current drawing color when a color button is clicked"""
+        self.current_color = color_name
+        self.status_var.set(f"Current Color: {color_name}")
+        self.status_bar.config(text=f"Color selected: {color_name}")
     
-    def update_session_timer(self):
-        """Update the session timer display"""
-        session_duration = datetime.now() - self.stats['session_start']
-        minutes, seconds = divmod(session_duration.seconds, 60)
-        self.stats_text['session_time'].set(f"Session Time: {minutes:02d}:{seconds:02d}")
-        self.root.after(1000, self.update_session_timer)
+    # Remove the statistics-related methods that are no longer needed
     
     def clear_canvas(self):
         """Clear the canvas"""
@@ -235,21 +205,30 @@ class AdvancedHandGestureDrawingApp:
             # Flip the frame horizontally for a more intuitive mirror view
             frame = cv2.flip(frame, 1)
             
-            # Overlay the color palette in the top-left corner
+            # Overlay the color palette on the right side of the frame
             h, w, _ = self.color_palette.shape
-            roi = frame[10:10+h, 10:10+w]
-            # Create a mask from the palette for proper overlay
-            palette_gray = cv2.cvtColor(self.color_palette, cv2.COLOR_BGR2GRAY)
-            _, mask = cv2.threshold(palette_gray, 1, 255, cv2.THRESH_BINARY)
-            mask_inv = cv2.bitwise_not(mask)
+            right_edge = frame.shape[1] - w - 10
+            roi = frame[10:10+h, right_edge:right_edge+w]
             
-            # Now blend the palette with the original frame
-            frame_bg = cv2.bitwise_and(roi, roi, mask=mask_inv)
-            palette_fg = cv2.bitwise_and(self.color_palette, self.color_palette, mask=mask)
-            frame[10:10+h, 10:10+w] = cv2.add(frame_bg, palette_fg)
-            
+            # Only try to blend if ROI is valid
+            if roi.shape[0] > 0 and roi.shape[1] > 0:
+                # Create a mask from the palette for proper overlay
+                palette_gray = cv2.cvtColor(self.color_palette, cv2.COLOR_BGR2GRAY)
+                _, mask = cv2.threshold(palette_gray, 1, 255, cv2.THRESH_BINARY)
+                mask_inv = cv2.bitwise_not(mask)
+                
+                # Now blend the palette with the original frame
+                try:
+                    frame_bg = cv2.bitwise_and(roi, roi, mask=mask_inv)
+                    palette_fg = cv2.bitwise_and(self.color_palette, self.color_palette, mask=mask)
+                    frame[10:10+h, right_edge:right_edge+w] = cv2.add(frame_bg, palette_fg)
+                except:
+                    # If there's a shape mismatch or other error, just overlay directly
+                    if h <= frame.shape[0] - 10 and w <= frame.shape[1] - right_edge:
+                        frame[10:10+h, right_edge:right_edge+w] = self.color_palette
+                
             # Add text labels to show what each color is
-            cv2.putText(frame, "Colors:", (15, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
+            cv2.putText(frame, "Colors", (right_edge + 5, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 0, 0), 2)
             
             # Convert the BGR image to RGB for MediaPipe
             rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
@@ -277,41 +256,42 @@ class AdvancedHandGestureDrawingApp:
                         y_px = min(int(landmark.y * frame_h), frame_h - 1)
                         landmarks[i] = (x_px, y_px)
                     
-                    # Get position of important fingers
+                    # Get position of important fingers and finger landmarks
                     thumb_tip = landmarks[self.mp_hands.HandLandmark.THUMB_TIP.value]
+                    thumb_ip = landmarks[self.mp_hands.HandLandmark.THUMB_IP.value]
                     thumb_mcp = landmarks[self.mp_hands.HandLandmark.THUMB_MCP.value]
                     index_tip = landmarks[self.mp_hands.HandLandmark.INDEX_FINGER_TIP.value]
+                    index_dip = landmarks[self.mp_hands.HandLandmark.INDEX_FINGER_DIP.value]
                     pinky_tip = landmarks[self.mp_hands.HandLandmark.PINKY_TIP.value]
                     wrist = landmarks[self.mp_hands.HandLandmark.WRIST.value]
                     
-                    # Detect if thumb is up (y-coordinate of thumb tip is significantly less than MCP)
-                    thumb_is_up = thumb_tip[1] < thumb_mcp[1] - 20
+                    # Detect if thumb is extended (distance from thumb tip to wrist is significantly greater than distance from MCP to wrist)
+                    thumb_wrist_dist = ((thumb_tip[0] - wrist[0])**2 + (thumb_tip[1] - wrist[1])**2)**0.5
+                    thumb_mcp_wrist_dist = ((thumb_mcp[0] - wrist[0])**2 + (thumb_mcp[1] - wrist[1])**2)**0.5
                     
-                    # Check if pinky is in the color palette area
-                    in_palette_area = (10 <= pinky_tip[0] <= 10 + self.color_palette.shape[1] and 
-                                      10 <= pinky_tip[1] <= 10 + self.color_palette.shape[0])
+                    # Thumb is considered extended if its tip is significantly further from the wrist than the MCP
+                    thumb_is_extended = thumb_wrist_dist > thumb_mcp_wrist_dist * 1.2
+                    
+                    # Check if pinky is in the color palette area (now on the right side)
+                    right_edge = frame.shape[1] - self.color_palette.shape[1] - 10
+                    in_palette_area = (right_edge <= pinky_tip[0] <= right_edge + self.color_palette.shape[1] and 
+                                       10 <= pinky_tip[1] <= 10 + self.color_palette.shape[0])
                     
                     # Select color with pinky finger if in palette area
                     if in_palette_area:
-                        # Determine which color cell the pinky is in
-                        rel_x = (pinky_tip[0] - 10) // 60  # 60 is cell width
-                        rel_y = (pinky_tip[1] - 10) // 60  # 60 is cell height
+                        # The color palette is now vertical, so we only need the y-coordinate
+                        rel_y = (pinky_tip[1] - 10) // (self.color_palette.shape[0] // len(self.colors))
                         
-                        if 0 <= rel_x < 3 and 0 <= rel_y < 3:
-                            # Map to color names
-                            regions = [
-                                ["top_left", "top_center", "top_right"],
-                                ["mid_left", "mid_center", "mid_right"],
-                                ["bottom_left", "bottom_center", "bottom_right"]
-                            ]
-                            color_region = regions[rel_y][rel_x]
-                            new_color = self.colors[color_region]
+                        # Make sure rel_y is in valid range
+                        if 0 <= rel_y < len(self.colors):
+                            # Get color name from list of colors (keys of self.colors dict, ordered)
+                            color_names = list(self.colors.values())
+                            new_color = color_names[rel_y]
                             
                             if new_color != self.current_color:
                                 self.current_color = new_color
-                                self.stats_text['current_color'].set(f"Current Color: {self.current_color}")
+                                self.status_var.set(f"Current Color: {self.current_color}")
                                 self.status_bar.config(text=f"Color selected: {self.current_color}")
-                                self.stats['color_changes'] += 1
                     
                     # Draw a circle at the index finger tip
                     cv2.circle(frame, index_tip, 10, (0, 255, 0), -1)
@@ -319,11 +299,11 @@ class AdvancedHandGestureDrawingApp:
                     # Map the finger coordinates to the canvas
                     canvas_x, canvas_y = index_tip
                     
-                    # Drawing mode depends on thumb position
+                    # Drawing mode depends on thumb extension
                     current_mode = self.mode_var.get()
                     
-                    if thumb_is_up:
-                        # Draw mode (thumb is up)
+                    if thumb_is_extended:
+                        # Draw mode (thumb is extended)
                         cv2.circle(frame, thumb_tip, 10, (0, 0, 255), -1)
                         cv2.putText(frame, "Drawing Mode", (frame_w - 150, 30), 
                                    cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 0, 255), 2)
@@ -342,8 +322,7 @@ class AdvancedHandGestureDrawingApp:
                                     width=self.brush_size_var.get(), fill=self.current_color, 
                                     capstyle=tk.ROUND, smooth=True
                                 )
-                                self.stats['lines_drawn'] += 1
-                                self.stats_text['lines_drawn'].set(f"Lines Drawn: {self.stats['lines_drawn']}")
+                                self.lines_drawn += 1
                         elif current_mode == "line" and self.start_point is not None:
                             # Line drawing mode
                             self.canvas.delete("temp_shape")
@@ -397,8 +376,7 @@ class AdvancedHandGestureDrawingApp:
                                         self.start_point[0] + radius, self.start_point[1] + radius,
                                         width=self.brush_size_var.get(), outline=self.current_color
                                     )
-                                self.stats['lines_drawn'] += 1
-                                self.stats_text['lines_drawn'].set(f"Lines Drawn: {self.stats['lines_drawn']}")
+                                self.lines_drawn += 1
                             
                             self.drawing = False
                             self.start_point = None
@@ -426,7 +404,6 @@ class AdvancedHandGestureDrawingApp:
     
     def on_closing(self):
         """Handle cleanup when the application is closed"""
-        self.save_stats()
         self.cap.release()
         self.hands.close()
         self.root.destroy()
