@@ -1,10 +1,10 @@
 # Advanced Hand Gesture Drawing
 
-![GitHub stars](https://img.shields.io/github/stars/yourusername/hand-gesture-drawing?style=social)
-![GitHub forks](https://img.shields.io/github/forks/yourusername/hand-gesture-drawing?style=social)
-![GitHub watchers](https://img.shields.io/github/watchers/yourusername/hand-gesture-drawing?style=social)
-![GitHub repo size](https://img.shields.io/github/repo-size/yourusername/hand-gesture-drawing)
-![GitHub last commit](https://img.shields.io/github/last-commit/yourusername/hand-gesture-drawing)
+![GitHub stars](https://img.shields.io/github/stars/DEVELOPERX-coder/Gesture-Drawing?style=social)
+![GitHub forks](https://img.shields.io/github/forks/DEVELOPERX-coder/Gesture-Drawing?style=social)
+![GitHub watchers](https://img.shields.io/github/watchers/DEVELOPERX-coder/Gesture-Drawing?style=social)
+![GitHub repo size](https://img.shields.io/github/repo-size/DEVELOPERX-coder/Gesture-Drawing)
+![GitHub last commit](https://img.shields.io/github/last-commit/DEVELOPERX-coder/Gesture-Drawing)
 
 A sophisticated Python application that allows you to draw on your screen using natural hand gestures captured through your webcam. This project combines computer vision with an intuitive drawing interface for a hands-free creative experience.
 
@@ -59,7 +59,7 @@ sudo apt install python3.10 python3.10-venv
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/hand-gesture-drawing.git
+git clone https://github.com/DEVELOPERX-coder/Gesture-Drawing.git
 cd hand-gesture-drawing
 
 # Create a virtual environment
@@ -181,7 +181,7 @@ Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=yourusername/hand-gesture-drawing&type=Date)](https://star-history.com/#yourusername/hand-gesture-drawing&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=DEVELOPERX-coder/Gesture-Drawing&type=Date)](https://star-history.com/#DEVELOPERX-coder/Gesture-Drawing&Date)
 
 ## License
 
